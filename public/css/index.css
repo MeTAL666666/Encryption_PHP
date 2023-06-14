@@ -1,0 +1,163 @@
+h1{
+	text-align: center;
+	height: 30px; 
+	margin-top: 0px;
+	border-bottom: 2px solid maroon;
+	padding-bottom: 8px;
+}
+
+#search_word{
+	font-size: 18px;
+	font-weight: bold;
+	position: relative;
+	display:block;
+	margin-left: 500px;
+}
+
+#code{
+	font-size: 18px;
+}
+
+#mask{
+	font-size: 18px;
+}
+
+.button_result{
+	background-color: LightGreen;
+	font-size: 18px;
+	font-weight: bold;
+	border-radius: 10px;
+	cursor:pointer;
+}
+
+.button_result[disabled]{
+	background-color: Gainsboro;
+	cursor: help;
+}
+
+#result{
+	display:block;
+	font-size: 18px;
+	font-weight: bold;
+	margin-left: 500px;
+	margin-top: 20px;
+}
+
+#result_output{
+	font-size: 18px;
+	font-weight: normal;
+}
+
+#cross{
+	text-align: center;
+	width:30px;
+	height:30px;
+	margin: 0;
+	padding: 0;
+	border-collapse: collapse;
+	border: 1px solid white;
+}
+
+#buttons{
+	width:30%;
+	float: right;
+}
+
+tr{
+	margin: 0;
+	padding: 0;
+	border-collapse: collapse;
+}
+
+td{
+	height: 30px;
+	width: 30px;
+}
+
+#leftBox{
+	float: left;
+
+}
+
+#rightBox{
+	float: left;
+	clear:left;
+}
+
+.butt{
+	position: relative;
+	font-weight: bold;
+	margin-top: 10px;
+	border-top-left-radius: 10px;
+	border-bottom-right-radius: 10px;
+	height:50px;
+	width: 116px;
+	cursor: pointer;
+}
+
+#puzzle{
+	text-align: center;
+	margin: 0;
+	padding: 0;
+	border-collapse: collapse;
+	border: 1px solid black;
+}
+
+.inputBox{
+	width: 40px;
+	height:40px;
+	border: 1px solid black;
+	text-align: center;
+	background-color: yellow;
+	font-weight: bold;
+	font-size: 20px;
+}
+
+#source_code{
+	position: relative;
+	float: left;
+	clear: left;
+	margin-top: 50px;
+	text-align: center;
+	border: 1px solid black;
+}
+
+#source_code td{
+	width: 41px;
+	height:40px;
+	border-collapse: collapse;
+	border: 1px solid black;
+	font-weight: bold;
+	font-size: 20px;
+}
+
+#keyword {
+	padding: 0;
+	position: relative;
+	float: left;
+	text-align: center;
+	margin-top: -114px;
+	margin-left: 308px;
+}
+
+#keyword td{
+	width: 40px;
+	height:40px;
+	border-collapse: collapse;
+	border: 1px solid black;
+	font-weight: bold;
+	font-size: 20px;
+}
+
+#ok{
+	border: 0 !important;
+	display: none;
+}
+
+#keyword_label{
+	float: left;
+	margin-top: -144px;
+	margin-left: 442px;
+	font-weight: bold;
+	font-size: 20px;
+}

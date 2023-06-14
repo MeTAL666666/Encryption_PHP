@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" type="text/css" href="{{ asset('css/index.css') }}">
+	<link rel="icon" href="css/favicon.ico" type="image/x-icon">
+	<title>Encryption</title>
+</head>
+<body onload="initializeScreen()">
+	<h1 style="-webkit-user-select: none;">Шифровочка</h1>
+	<div id="leftBox">
+		<table id="puzzle"></table>
+	</div>
+	<div id="rightBox">
+		<table>
+			<tr><td><input class="butt" style="background-color: Coral" type="submit" title="Вернуть кроссворд к изначальному состоянию" value="Очистить всё" onclick="clearAllClicked()"></td>
+			<td><input class="butt" style="background-color: LightBlue" type="submit" title="Открыть слова на пересечении с ячейкой, в которой установлен курсор" value="Открыть слово" onclick="solveClicked()"></td>
+			<td><input class="butt" style="background-color: LightBlue" type="submit" title="Показать букву в ячейке, в которой установлен курсор" value="Показать букву" onclick="clueClicked()"></td>
+			<td><input class="butt" style="background-color: LightGreen" type="submit" title="Проверить правильно ли разгадан кроссворд. Ошибки будут подсвечены красным цветом" value="Проверить" onclick="checkClicked()"></td></tr>
+		</table>
+	</div>
+	<form id = 'form' method="POST">
+		<div id="search_word">
+			<label id='code_lable' style="cursor: help;-webkit-user-select: none;" title="Введите цифровой шифр для слова из кроссворда&#013;Например: 1153241526">Введите шифр</label>
+			<input id='code' name = "code" type="text" onkeyup="prov()">
+			<label id='mask_lable' style="cursor: help;-webkit-user-select: none;" title='Введите известные буквы, заменяя неизвестные буквы знаком дефис "-" ( либо знаками *?._ )&#013;Если количество букв не известно, используйте знак "+", вставляя вместо пропущенных букв'>Введите маску</label>
+			<input id='mask' name = "mask" type="text" onkeyup="prov()">
+			<input class="button_result" id="button_result" type="submit" value="Найти слово" title="Поиск будет доступен после заполнения полей «Введите шифр» и «Введите маску»" style="-webkit-user-select: none;">
+		</div>
+		<div id="result" style="display: none">
+			<label id='result_label' title="Результат получен с помощью сервиса poncy.ru" style="cursor: help;-webkit-user-select: none;">Найдено слово: </label>
+			<output id='result_output' type="text">
+		</div>
+	</form>
+	<table id="source_code">
+		<colgroup>
+    		<col span="1" style="background:Yellow">
+    		<col style="background-color:SkyBlue">
+    		<col style="background-color:SkyBlue">
+    		<col style="background-color:SkyBlue">
+  		</colgroup>
+		<tr><td>1</td><td>A</td><td>В</td><td>Г</td></tr>
+		<tr><td>2</td><td>Е</td><td>И</td><td>К</td></tr>
+		<tr><td>3</td><td>Л</td><td>Н</td><td>О</td></tr>
+		<tr><td>4</td><td>П</td><td>Р</td><td>С</td></tr>
+		<tr><td>5</td><td>Т</td><td>У</td><td>Щ</td></tr>
+		<tr><td>6</td><td>Ь</td><td>Я</td><td style="background-color:black"> </td></tr>
+	</table>
+	<label id='keyword_label' style="cursor: help;-webkit-user-select: none;" title="Слово составится автоматически после успешного разгадывания кроссворда">Ключевое слово</label>
+	<table id="keyword">
+		<colgroup>
+    		<col span="3" style="background:Orange">
+    		<col span="3" style="background:SkyBlue">
+    		<col span="3" style="background:Thistle">
+    	</colgroup>
+    	<tr><td id='k1'></td><td id='k2'></td><td id='k3'></td><td id='k4'></td>
+    	<td id='k5'></td><td id='k6'></td><td id='k7'></td><td id='k8'></td><td id='k9'></td><td id='ok'><img src="css/done.png" alt=""height=30 width=30></img></td></tr>
+	</table>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<script type="text/javascript">
+//Глобальные переменные
+var currentTextInput;
+var puzzleArrayData;
+//Загрузка кроссворда
+function initializeScreen(){
+	var puzzleTable = document.getElementById("puzzle");
+	puzzleArrayData = preparePuzzleArray();
+	for ( var i = 0; i < puzzleArrayData.length ; i++ ) {
+		var row = puzzleTable.insertRow(-1);
+		var rowData = puzzleArrayData[i];
+		for(var j = 0 ; j < rowData.length ; j++){
+			var cell = row.insertCell(-1);
+			if(rowData[j] != 0){
+				var txtID = String('txt' + '_' + i + '_' + j);
+				cell.innerHTML = '<input type="text" class="inputBox" maxlength="1" autocomplete="off" style="text-transform: lowercase" ' + 'id="' + txtID + '" onfocus="textInputFocus(' + "'" + txtID + "'"+ ')">';
+			}else{
+				cell.style.backgroundColor  = "black";
+			}
+		}
+	}
+	addHint();
+}
+//Добавление шифра для каждой ячейки
+function addHint(){
+	document.getElementById("txt_0_0").placeholder = "1";
+	document.getElementById("txt_0_1").placeholder = "1";
+	document.getElementById("txt_0_2").placeholder = "5";
+	document.getElementById("txt_0_3").placeholder = "3";
+	document.getElementById("txt_0_4").style.backgroundColor = "Orange";
+	document.getElementById("txt_0_4").placeholder = "2"
+	document.getElementById("txt_0_5").placeholder = "4";
+	document.getElementById("txt_0_6").placeholder = "1";
+	document.getElementById("txt_0_7").placeholder = "5";
+	document.getElementById("txt_0_8").placeholder = "2";
+	document.getElementById("txt_0_9").placeholder = "6";
+	document.getElementById("txt_1_0").placeholder = "1";
+	document.getElementById("txt_1_2").placeholder = "5";
+	document.getElementById("txt_1_4").placeholder = "3";
+	document.getElementById("txt_1_5").placeholder = "3";
+	document.getElementById("txt_1_6").style.backgroundColor = "Thistle";
+	document.getElementById("txt_1_6").placeholder = "5";
+	document.getElementById("txt_1_7").placeholder = "3";
+	document.getElementById("txt_1_9").placeholder = "1";
+	document.getElementById("txt_2_0").placeholder = "5";
+	document.getElementById("txt_2_1").style.backgroundColor = "Thistle";
+	document.getElementById("txt_2_1").placeholder = "4";
+	document.getElementById("txt_2_2").placeholder = "2";
+	document.getElementById("txt_2_3").style.backgroundColor = "SkyBlue";
+	document.getElementById("txt_2_3").placeholder = "4";
+	document.getElementById("txt_2_4").placeholder = "2";
+	document.getElementById("txt_2_5").placeholder = "5";
+	document.getElementById("txt_2_6").placeholder = "1";
+	document.getElementById("txt_2_7").placeholder = "3";
+	document.getElementById("txt_2_8").placeholder = "2";
+	document.getElementById("txt_2_9").placeholder = "2";
+	document.getElementById("txt_3_0").style.backgroundColor = "Thistle";
+	document.getElementById("txt_3_0").placeholder = "3";
+	document.getElementById("txt_3_2").placeholder = "5";
+	document.getElementById("txt_3_3").style.backgroundColor = "Orange";
+	document.getElementById("txt_3_3").placeholder = "5";
+	document.getElementById("txt_3_4").placeholder = "5";
+	document.getElementById("txt_3_5").placeholder = "1";
+	document.getElementById("txt_3_7").placeholder = "5";
+	document.getElementById("txt_3_9").style.backgroundColor = "SkyBlue";
+	document.getElementById("txt_3_9").placeholder = "3";
+	document.getElementById("txt_4_0").placeholder = "4";
+	document.getElementById("txt_4_1").placeholder = "2";
+	document.getElementById("txt_4_2").placeholder = "1";
+	document.getElementById("txt_4_3").placeholder = "3";
+	document.getElementById("txt_4_4").placeholder = "6";
+	document.getElementById("txt_4_5").placeholder = "3";
+	document.getElementById("txt_4_6").placeholder = "3";
+	document.getElementById("txt_4_7").style.backgroundColor = "Orange";
+	document.getElementById("txt_4_7").placeholder = "4";
+	document.getElementById("txt_4_8").placeholder = "5";
+	document.getElementById("txt_4_9").style.backgroundColor = "SkyBlue";
+	document.getElementById("txt_4_9").placeholder = "6";
+}
+
+function textInputFocus(txtID123){
+	currentTextInput = txtID123;
+}
+//Список с буквами
+function preparePuzzleArray(){
+var items = [	['а', 'в', 'т', 'о', 'к', 'р', 'а', 'т', 'и', 'я'],
+				['в', 0, 'щ', 0, 'л', 'о', 'т', 'о', 0, 'г' ],
+				['т', 'р', 'е', 'п', 'е', 'т', 'а', 'н', 'и', 'е'],
+				['о', 0, 'т', 'у', 'т', 'а', 0, 'у', 0, 'л'],
+				['р', 'е', 'а', 'л', 'ь', 'н', 'о', 'с', 'т', 'ь']
+			];
+return items;
+}
+//Получение ключевого слова
+function getKeyword(){
+	currentTextInput = '';
+	var puzzleTable = document.getElementById("puzzle");
+	puzzleTable.innerHTML = '';
+    initializeScreen();
+}
+//Очистить кроссворд
+function clearAllClicked(){
+	currentTextInput = '';
+	var puzzleTable = document.getElementById("puzzle");
+	puzzleTable.innerHTML = '';
+    initializeScreen();
+}
+//Проверка кроссворда
+function checkClicked(){
+	var colCount = 0
+	for ( var i = 0; i < puzzleArrayData.length ; i++ ) {
+		var rowData = puzzleArrayData[i];
+		for(var j = 0 ; j < rowData.length ; j++){
+			if(rowData[j] != 0){
+				var selectedInputTextElement = document.getElementById('txt' + '_' + i + '_' + j);
+				if(selectedInputTextElement.value != puzzleArrayData[i][j]){
+					selectedInputTextElement.style.backgroundColor = 'OrangeRed';
+					colCount+=1;
+					
+				}else{
+					selectedInputTextElement.style.backgroundColor = 'Yellow';
+					if (selectedInputTextElement.id == 'txt_0_4' || selectedInputTextElement.id == 'txt_3_3'  || selectedInputTextElement.id == 'txt_4_7'){
+						selectedInputTextElement.style.backgroundColor = 'Orange';
+					}
+					if (selectedInputTextElement.id == 'txt_1_6' || selectedInputTextElement.id == 'txt_2_1'  || selectedInputTextElement.id == 'txt_3_0'){
+						selectedInputTextElement.style.backgroundColor = 'Thistle';
+					}
+					if (selectedInputTextElement.id == 'txt_2_3' || selectedInputTextElement.id == 'txt_3_9'  || selectedInputTextElement.id == 'txt_4_9'){
+						selectedInputTextElement.style.backgroundColor = 'SkyBlue';
+					}
+				}
+			}
+		}
+	}
+	if (colCount == 0){
+		l1 = document.getElementById('txt_0_4').value;
+		l2 = document.getElementById('txt_3_3').value;
+		l3 = document.getElementById('txt_4_7').value;
+		l4 = document.getElementById('txt_2_3').value;
+		l5 = document.getElementById('txt_3_9').value;
+		l6 = document.getElementById('txt_4_9').value;
+		l7 = document.getElementById('txt_1_6').value;
+		l8 = document.getElementById('txt_2_1').value;
+		l9 = document.getElementById('txt_3_0').value;
+		letters = l1 + l2 + l3 + l4 + l5 + l6 + l7 + l8 + l9
+		console.log(letters)
+		sendData()
+	}
+}
+//Подсказать букву
+function clueClicked(){
+	if (currentTextInput != null){
+		var temp1 = currentTextInput;
+		var token = temp1.split("_");
+		var row = token[1];
+		var column = token[2];
+		document.getElementById(temp1).value = puzzleArrayData[row][column];
+	}
+}
+//Открыть слова на пересечении
+function solveClicked(){
+	if (currentTextInput != null){
+		var temp1 = currentTextInput;
+		var token = temp1.split("_");
+		var row = token[1];
+		var column = token[2];
+		
+		//Отображение букв сверху
+		for(j = row; j >= 0; j--){
+			if(puzzleArrayData[j][column] != 0){
+				document.getElementById('txt' + '_' + j + '_' + column).value = puzzleArrayData[j][column];
+				}else break;
+		}
+		// Отображение букв справа
+		for(i = column; i< puzzleArrayData[row].length; i++){
+			if(puzzleArrayData[row][i] != 0){
+				document.getElementById('txt' + '_' + row + '_' + i).value = puzzleArrayData[row][i];
+				}else break;
+		}
+		
+		// Отображение букв снизу
+		for(m = row; m< puzzleArrayData.length; m++){
+			if(puzzleArrayData[m][column] != 0){
+				document.getElementById('txt' + '_' + m + '_' + column).value = puzzleArrayData[m][column];
+				}else break;
+		}
+		// Отображение букв слева
+		for(k = column; k >= 0; k--){
+			if(puzzleArrayData[row][k] != 0){
+				document.getElementById('txt' + '_' + row + '_' + k).value = puzzleArrayData[row][k];
+				}else break;
+		}
+	}
+}
+//Отправка данных формы для поиска слова в Python
+$(document).ready(function() {
+        $('#form').on('submit',function(e){
+            $.ajax({
+            data : {
+                code : $('#code').val(),
+                mask : $('#mask').val(),
+            },
+            type : 'POST',
+            url : '/',
+            success: function(response){
+                console.info(response);
+            },
+            error: function(error){
+                console.info(error);
+            }
+            })
+            .done(function(data){
+  			//Отображение результатов поиска слова на poncy.ru
+            $('#result_output').text(' ' + data.output + ' (' +data.word_code + ' | ' + data.mask + ') ').show();
+            });
+            document.getElementById('code').value = '';
+            document.getElementById('mask').value = '';
+            document.getElementById('result').style.display = '';
+            document.getElementById('button_result').disabled = true;
+            $('#button_result').prop("title", "Поиск будет доступен после заполнения полей «Введите шифр» и «Введите маску»" );
+            e.preventDefault();
+        });
+    });
+//Проверка заполненности полей шифра и маски
+function prov() {
+	var code = document.getElementById('code').value;	// Получение количества введенных символов
+	var mask = document.getElementById('mask').value;
+	var search = document.getElementById('button_result');
+	search.disabled = true;														// Блокировка кнопки запуска...
+	if (code.length > 0 && mask.length > 0) {									// ...пока введено менее 4-х символов
+		search.disabled = false;
+		$(search).prop( "title", "" );
+   	}else{
+   		search.disabled = true;
+   	}
+ };
+prov()
+//Отправка данных для составления ключевого слова
+function sendData() {
+    $.ajax({
+        url: '/',
+        type: 'POST',
+        data: {
+			letters: letters
+		},
+        success: function(response){
+            console.info(response);
+        },
+        error: function(error) {
+            console.log(error);
+        }
+    })
+    .done(function(data){
+        document.getElementById('k1').innerHTML = data.keyword[0];
+        document.getElementById('k2').innerHTML = data.keyword[1];
+        document.getElementById('k3').innerHTML = data.keyword[2];
+        document.getElementById('k4').innerHTML = data.keyword[3];
+        document.getElementById('k5').innerHTML = data.keyword[4];
+        document.getElementById('k6').innerHTML = data.keyword[5];
+        document.getElementById('k7').innerHTML = data.keyword[6];
+        document.getElementById('k8').innerHTML = data.keyword[7];
+        document.getElementById('k9').innerHTML = data.keyword[8];
+        document.getElementById('ok').style.display = 'block';
+        });
+}
+</script>
+</body>
+</html>
